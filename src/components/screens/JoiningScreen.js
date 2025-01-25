@@ -502,7 +502,9 @@ export function JoiningScreen({
                     setVideoTrack={setVideoTrack}
                     onClickStartMeeting={onClickStartMeeting}
                     onClickJoin={async (id) => {
-                      const token = await getToken();
+                      // const token = await getToken();
+                      const token = "c2f0c8b5-0723-4ce3-8fcf-c9582c44d382";
+                      // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlrZXkiOiJjMmYwYzhiNS0wNzIzLTRjZTMtOGZjZi1jOTU4MmM0NGQzODIiLCJwZXJtaXNzaW9ucyI6WyJhbGxvd19qb2luIl0sImlhdCI6MTczNzc4NzUzOCwiZXhwIjoxNzM4MzkyMzM4fQ.S7L_jLPdyL7D9mU5veUFG7y2AAa65OQQ-Xq1RGKUszY";
                       const { meetingId, err } = await validateMeeting({
                         roomId: id,
                         token,

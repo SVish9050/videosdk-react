@@ -1,66 +1,94 @@
-import React, { useEffect } from "react";
+import { MeetingProvider } from "@videosdk.live/react-sdk";
+import { useEffect } from "react";
+import { useState } from "react";
+import { MeetingAppProvider } from "./MeetingAppContextDef";
+import { MeetingContainer } from "./meeting/MeetingContainer";
+import { LeaveScreen } from "./components/screens/LeaveScreen";
+import { JoiningScreen } from "./components/screens/JoiningScreen"
 import { VideoSDKMeeting } from "@videosdk.live/rtc-js-prebuilt";
 
-export default function App() {
+function App() {
+  const [token, setToken] = useState("c2f0c8b5-0723-4ce3-8fcf-c9582c44d382");
+  const [meetingId, setMeetingId] = useState("");
+  const [participantName, setParticipantName] = useState("");
+  const [micOn, setMicOn] = useState(false);
+  const [webcamOn, setWebcamOn] = useState(false);
+  const [customAudioStream, setCustomAudioStream] = useState(null);
+  const [customVideoStream, setCustomVideoStream] = useState(null)
+  const [isMeetingStarted, setMeetingStarted] = useState(false);
+  const [isMeetingLeft, setIsMeetingLeft] = useState(false);
+
+  const isMobile = window.matchMedia(
+    "only screen and (max-width: 768px)"
+  ).matches;
+
   useEffect(() => {
-    const config = {
-      name: "Demo User",
-      meetingId: "milkyway",
-      apiKey: "c2f0c8b5-0723-4ce3-8fcf-c9582c44d382",
+    if (isMobile) {
+      window.onbeforeunload = () => {
+        return "Are you sure you want to exit?";
+      };
+    }
+  }, [isMobile]);
 
-      containerId: null,
+  return (
+    <>
+      <MeetingAppProvider>
+        {isMeetingStarted ? (
 
-      micEnabled: true,
-      webcamEnabled: true,
-      participantCanToggleSelfWebcam: true,
-      participantCanToggleSelfMic: true,
+          <MeetingProvider
+            config={{
+              meetingId,
+              micEnabled: micOn,
+              webcamEnabled: webcamOn,
+              name: participantName ? participantName : "TestUser",
+              multiStream: true,
+              customCameraVideoTrack: customVideoStream,
+              customMicrophoneAudioTrack: customAudioStream
+            }}
+            token={token}
+            reinitialiseMeetingOnConfigChange={true}
+            joinWithoutUserInteraction={true}
+          >
+            <MeetingContainer
+              onMeetingLeave={() => {
+                setToken("");
+                setMeetingId("");
+                setParticipantName("");
+                setWebcamOn(false);
+                setMicOn(false);
+                setMeetingStarted(false);
+              }}
+              setIsMeetingLeft={setIsMeetingLeft}
+            />
+          </MeetingProvider>
 
-      chatEnabled: true,
-      screenShareEnabled: true,
+        ) : isMeetingLeft ? (
+          <LeaveScreen setIsMeetingLeft={setIsMeetingLeft} />
+        ) : (
 
-      joinScreen: {
-        visible: true,
-        title: "Daily scrum",
-      }
-      /*
-
-     Other Feature Properties
-      
-      */
-    };
-
-    const meeting = new VideoSDKMeeting();
-    meeting.init(config);
-  }, []);
-
-  // const createMeeting = () => {
-  //   console.log('create meeting')
-  //   let meetingId =  'xxxxyxxx'.replace(/[xy]/g, function(c) {
-  //     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-  //     return v.toString(16);
-  //   });
-  //   console.log("http://"+ window.location.host + "?meetingId="+ meetingId)
-  //   document.getElementById("copyInput").value = "https://"+ window.location.host + "/meeting.html?meetingId="+ meetingId;
-  // }
-
-  // const myFunction = () => {
-  //   console.log("my function")
-  //    /* Get the text field */
-  //    var copyText = document.getElementById("copyInput");
-
-  //    /* Select the text field */
-  //    copyText.select();
-  //    copyText.setSelectionRange(0, 99999); /* For mobile devices */
-
-  //    /* Copy the text inside the text field */
-  //    navigator.clipboard.writeText(copyText.value);
-  // }
-
-  return <div>
-
-    {/* <button onClick={() => createMeeting()}>Create Meeting</button>
-    <br/>
-    <input type="text" id="copyInput" />
-    <button onClick={() => myFunction()}>Copy Link</button> */}
-  </div>;
+          <JoiningScreen
+            participantName={participantName}
+            setParticipantName={setParticipantName}
+            setMeetingId={setMeetingId}
+            setToken={setToken}
+            micOn={micOn}
+            setMicOn={setMicOn}
+            webcamOn={webcamOn}
+            setWebcamOn={setWebcamOn}
+            customAudioStream={customAudioStream}
+            setCustomAudioStream={setCustomAudioStream}
+            customVideoStream={customVideoStream}
+            setCustomVideoStream={setCustomVideoStream}
+            onClickStartMeeting={() => {
+              setMeetingStarted(true);
+            }}
+            startMeeting={isMeetingStarted}
+            setIsMeetingLeft={setIsMeetingLeft}
+          />
+        )}
+      </MeetingAppProvider>
+    </>
+  );
 }
+
+export default App;
